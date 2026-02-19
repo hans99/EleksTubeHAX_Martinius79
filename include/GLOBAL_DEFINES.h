@@ -699,8 +699,9 @@
 // over shift register!
 #define TFT_ENABLE_PIN (-1)
 
-// Configure library \TFT_eSPI\User_Setup.h: ST7789 135 x 240 display with no chip select line.
+// Configure library \TFT_eSPI\User_Setup.h: ST7735 80 x 160 display with no chip select line.
 #define ST7735_DRIVER // Configure all registers
+#define ST7735_GREENTAB160x80 // 80x160 panel → correct offsets (colstart=26, rowstart=1)
 #define TFT_WIDTH 80
 #define TFT_HEIGHT 160
 #define CGRAM_OFFSET // Library will add offsets required

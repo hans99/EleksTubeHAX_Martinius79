@@ -544,13 +544,13 @@ static void i2cReplayInitSequence(uint8_t address)
   i2cWriteReg(address, 0x01, 0xFE);
   delay(100);
 
-  Serial.println("  Replay: burst toggle 00 18 / 00 FF (33x)");
-  for (uint8_t i = 0; i < 33; i++)
-  {
-    i2cWriteReg(address, 0x00, 0x18);
-    i2cWriteReg(address, 0x00, 0xFF);
-    // delayMicroseconds(500);
-  }
+  // Serial.println("  Replay: burst toggle 00 18 / 00 FF (33x)");
+  // for (uint8_t i = 0; i < 33; i++)
+  // {
+  //   i2cWriteReg(address, 0x00, 0x18);
+  //   i2cWriteReg(address, 0x00, 0xFF);
+  //   // delayMicroseconds(500);
+  // }
 }
 
 static void i2cCommandProbe(uint8_t address)
@@ -935,10 +935,11 @@ void setup()
   Wire.setTimeOut(50);
   i2cScan();
 
+  // Check for I/O expander presence by attempting to read a register (e.g., input reg 0x00)
   Wire.beginTransmission(EXPANDER_ADDR);
   expander_present = (Wire.endTransmission() == 0);
   Serial.printf("Expander present at 0x%02X: %s\n", EXPANDER_ADDR, expander_present ? "yes" : "no");
-
+  
   if (expander_present)
   {
     // Polarity register + init sequence from captured original firmware
@@ -946,14 +947,16 @@ void setup()
     expanderWriteCmd(EXPANDER_ADDR, 0x02, 0x99);
     i2cReplayInitSequence(EXPANDER_ADDR);
 
-    // Init all displays once via TFT_eSPI (all CS low = broadcast)
-    Serial.println("TFT init (all CS low)...");
+    // Init all displays once via TFT_eSPI (all I/O expander pins low = broadcast)
+    // INITR_GREENTAB160x80 = 0x06 → correct offsets colstart=26, rowstart=1 for 80x160 panel
+    Serial.println("TFT init (with all I/O expander pins low)...");
     expanderWriteCmd(EXPANDER_ADDR, 0x00, 0x00);
     delay(5);
-    test_tft.init(0x0);
+    test_tft.init(INITR_GREENTAB160x80);
+    // test_tft.writecommand(TFT_INVOFF); // Library sends INVON for this tab type, but panel needs INVOFF
     test_tft.setRotation(0);
     test_tft.fillScreen(TFT_BLACK);
-    expanderWriteCmd(EXPANDER_ADDR, 0x00, 0xFF); // all CS high
+    expanderWriteCmd(EXPANDER_ADDR, 0x00, 0xFF); // all I/O expander outputs high
     Serial.println("TFT init done.");
   }
 
@@ -1132,6 +1135,7 @@ void loop()
 
   const uint8_t cs_masks[NUM_DIGITS] = {0xFE, 0xFD, 0xFB, 0xDF, 0xBF, 0x7F};
   const uint16_t colors[NUM_DIGITS] = {TFT_RED, TFT_GREEN, TFT_BLUE, TFT_YELLOW, TFT_CYAN, TFT_MAGENTA};
+  const char* color_names[NUM_DIGITS] = {"RED", "GREEN", "BLUE", "YELLOW", "CYAN", "MAGENTA"};
 
   if (!expander_present) { delay(100); return; }
 
@@ -1143,8 +1147,22 @@ void loop()
     expanderWriteCmd(EXPANDER_ADDR, 0x00, cs_masks[digit_idx]);
     delay(2);
     test_tft.fillScreen(colors[digit_idx]);
-    Serial.printf("Digit %d -> color 0x%04X\n", digit_idx, colors[digit_idx]);
+    // Draw color name in small font to verify orientation
+    test_tft.setTextColor(TFT_BLACK, colors[digit_idx]);
+    test_tft.setTextFont(2);  // Font 2 = 16px
+    test_tft.setTextSize(1);
+    test_tft.setTextDatum(MC_DATUM); // middle-center
+    test_tft.drawString(color_names[digit_idx], TFT_WIDTH / 2, TFT_HEIGHT / 2);
+    Serial.printf("Digit %d -> %s (0x%04X)\n", digit_idx, color_names[digit_idx], colors[digit_idx]);
     expanderWriteCmd(EXPANDER_ADDR, 0x00, 0xFF);
+    if (digit_idx >= (NUM_DIGITS-1))
+    {
+      Serial.println("All digits done, restarting...");
+      // blank all digits before next loop to avoid ghosting effects
+      expanderWriteCmd(EXPANDER_ADDR, 0x00, 0x00);
+      test_tft.fillScreen(TFT_BLACK);
+    }
+    //reset digit index after one loop
     digit_idx = (uint8_t)((digit_idx + 1) % NUM_DIGITS);
   }
 

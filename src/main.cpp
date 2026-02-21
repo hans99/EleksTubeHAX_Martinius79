@@ -169,9 +169,12 @@ uint8_t hour_old = 255;
 #endif
 
 uint32_t lastMQTTCommandExecuted = (uint32_t)-1;
+
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
 static constexpr uint8_t EXPANDER_ADDR = 0x19;
 static bool expander_present = false;
 static TFT_eSPI test_tft;
+#endif // HARDWARE_MARVELTUBESMINI_CLOCK
 
 // Helper function, defined below.
 void updateClockDisplay(TFTs::show_t show = TFTs::yes);
@@ -181,6 +184,7 @@ bool isNightTime(uint8_t current_hour);
 void checkDimmingNeeded(void);
 #endif
 
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
 static bool i2cReadReg(uint8_t address, uint8_t reg, uint8_t &value)
 {
   Wire.beginTransmission(address);
@@ -920,12 +924,14 @@ static void i2cScan()
     Serial.println("No I2C devices found.");
   }
 }
+#endif // HARDWARE_MARVELTUBESMINI_CLOCK
 
 //-----------------------------------------------------------------------
 // Setup
 //-----------------------------------------------------------------------
 void setup()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
   Serial.begin(115200);
   delay(2000); // Wait for serial monitor to catch up
   Serial.println("\nSystem starting...\n");
@@ -960,7 +966,7 @@ void setup()
     Serial.println("TFT init done.");
   }
 
-#if 0
+#else // !HARDWARE_MARVELTUBESMINI_CLOCK
 
   Serial.println("\nSystem starting...\n");
   Serial.println("EleksTubeHAX https://github.com/aly-fly/EleksTubeHAX");
@@ -1122,7 +1128,7 @@ void setup()
   uclock.loop();
   updateClockDisplay(TFTs::force); // Draw all the clock digits
   Serial.println("Starting main loop...");
-#endif
+#endif // !HARDWARE_MARVELTUBESMINI_CLOCK
 }
 
 //-----------------------------------------------------------------------
@@ -1130,6 +1136,7 @@ void setup()
 //-----------------------------------------------------------------------
 void loop()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
   static uint8_t digit_idx = 0;
   static uint32_t last_tick = 0;
 
@@ -1168,7 +1175,7 @@ void loop()
 
   delay(5);
 
-#if 0
+#else // !HARDWARE_MARVELTUBESMINI_CLOCK
   uint32_t millis_at_top = millis();
 
   // Do all the maintenance work.
@@ -1703,7 +1710,7 @@ void loop()
     Serial.println(time_in_loop);
   }
 #endif // DEBUG_OUTPUT
-#endif
+#endif // !HARDWARE_MARVELTUBESMINI_CLOCK
 }
 
 void setupMenu()

@@ -170,7 +170,7 @@ uint8_t hour_old = 255;
 
 uint32_t lastMQTTCommandExecuted = (uint32_t)-1;
 
-#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK2
 static constexpr uint8_t EXPANDER_ADDR = 0x19;
 static bool expander_present = false;
 static TFT_eSPI test_tft;
@@ -184,7 +184,7 @@ bool isNightTime(uint8_t current_hour);
 void checkDimmingNeeded(void);
 #endif
 
-#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK2
 static bool i2cReadReg(uint8_t address, uint8_t reg, uint8_t &value)
 {
   Wire.beginTransmission(address);
@@ -307,7 +307,7 @@ static void i2cScan()
 //-----------------------------------------------------------------------
 void setup()
 {
-#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK2
   Serial.begin(115200);
   delay(2000); // Wait for serial monitor to catch up
   Serial.println("\nSystem starting...\n");
@@ -400,7 +400,11 @@ void setup()
   tfts.begin(); // ...and count number of clock faces available...
   tfts.fillScreen(TFT_BLACK);
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  tfts.setCursor(0, 0, 1); // Font 1. 8 pixel high
+#else
   tfts.setCursor(0, 0, 2); // Font 2. 16 pixel high
+#endif
   tfts.println("Starting Setup...");
 
 #ifdef HARDWARE_NOVELLIFE_CLOCK
@@ -512,7 +516,7 @@ void setup()
 //-----------------------------------------------------------------------
 void loop()
 {
-#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK2
   static uint8_t digit_idx = 0;
   static uint32_t last_tick = 0;
 
@@ -791,7 +795,11 @@ void loop()
   { // Power button was pressed: if in the menu, exit menu, else turn off displays and backlight.
     if (tfts.isEnabled())
     { // Check if TFT state is enabled and switch OFF the LCDs and LED backlights.
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+      tfts.mtmexpander.setAll();
+#else
       tfts.chip_select.setAll();
+#endif
       tfts.fillScreen(TFT_BLACK); // Blank the screens before turning off; needed for all clocks without a real power switch circuit
       tfts.disableAllDisplays();
       backlights.PowerOff();
@@ -1040,7 +1048,11 @@ void loop()
             tfts.clear();
             tfts.fillScreen(TFT_BLACK);
             tfts.setTextColor(TFT_WHITE, TFT_BLACK);
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+            tfts.setCursor(0, 0, 1); // Font 2. 16 pixel high
+#else
             tfts.setCursor(0, 0, 4); // Font 4. 26 pixel high
+#endif
             WiFiStartWps();
           }
         }
@@ -1091,10 +1103,17 @@ void loop()
 
 void setupMenu()
 {                                  // Prepare drawing of the menu texts
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  tfts.mtmexpander.setHoursTens();
+  tfts.setTextColor(TFT_WHITE, TFT_BLACK);
+  tfts.fillRect(0, 60, 80, 60, TFT_BLACK); // use lower half of the display, fill with black
+  tfts.setCursor(0, 62, 1);
+#else
   tfts.chip_select.setHoursTens(); // use most left display
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
   tfts.fillRect(0, 120, 135, 120, TFT_BLACK); // use lower half of the display, fill with black
   tfts.setCursor(0, 124, 4);                  // use font 4 - 26 pixel high - for the menu text
+#endif
 }
 
 #ifdef DIMMING

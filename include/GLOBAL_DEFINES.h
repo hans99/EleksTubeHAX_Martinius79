@@ -30,7 +30,7 @@
 // #define HARDWARE_PUNKCYBER_CLOCK         // PunkCyber / RGB Glow tube / PCBway clocks
 // #define HARDWARE_IPSTUBE_CLOCK           // Clocks with 8MB flash on PCB (like the IPSTube model H401 and H402)
 // #define HARDWARE_MARVELTUBES_CLOCK       // MarvelTubes clock with 16MB flash on PCB
-// #define HARDWARE_MARVELTUBESMINI_CLOCK   // MarvelTubes Mini clock with 4MB flash on PCB and ESP C3 Mini
+#define HARDWARE_MARVELTUBESMINI_CLOCK   // MarvelTubes Mini clock with 4MB flash on PCB and ESP C3 Mini
 
 #ifdef HARDWARE_PUNKCYBER_CLOCK
 // Everything else is the same, except digits are swapped from left to right.
@@ -706,6 +706,8 @@
 #define TFT_HEIGHT 160
 #define CGRAM_OFFSET // Library will add offsets required
 
+#define TFT_SKIP_REINIT // Not tested if needed when HA sends
+
 // C3 fix: TFT_SDA_READ must be DISABLED, otherwise TFT_eSPI.h forces TFT_MISO to -1
 // which blocks the SPI port on ESP32-C3 with Arduino Core >= 2.0.15
 // See: https://github.com/Bodmer/TFT_eSPI/issues/3384 and #3743
@@ -720,7 +722,7 @@
 #define TFT_RST (-1)  // SPI Reset -> over extender?
 
 // Fonts to load for TFT.
-// #define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
+#define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
 #define LOAD_FONT2 // Font 2. Small 16 pixel high font, needs ~353
 #define LOAD_FONT4 // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
 // #define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm

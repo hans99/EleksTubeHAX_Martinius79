@@ -6,12 +6,21 @@
 #include <LittleFS.h>
 #include "GLOBAL_DEFINES.h"
 #include <TFT_eSPI.h>
+
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+#include "MarvelTubesMiniExpander.h"
+#else
 #include "ChipSelect.h"
+#endif
 
 class TFTs : public TFT_eSPI
 {
 public:
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  TFTs() : TFT_eSPI(), mtmexpander(), TFTsEnabled(false)
+#else
   TFTs() : TFT_eSPI(), chip_select(), TFTsEnabled(false)
+#endif
   {
 #ifndef HARDWARE_IPSTUBE_CLOCK
     for (uint8_t digit = 0; digit < NUM_DIGITS; digit++)
@@ -54,8 +63,13 @@ public:
   void toggleAllDisplays();
   bool isEnabled() { return TFTsEnabled; }
 
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  MarvelTubesMiniExpander mtmexpander;
+#else
+
   // Making chip_select public so we don't have to proxy all methods, and the caller can just use it directly.
   ChipSelect chip_select;
+#endif
 
   uint8_t NumberOfClockFaces = 0;
   void LoadNextImage();

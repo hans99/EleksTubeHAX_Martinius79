@@ -4,8 +4,13 @@
 
 void TFTs::begin()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  mtmexpander.begin();
+  mtmexpander.setAll();
+#else
   chip_select.begin();
   chip_select.setAll(); // Start with all displays selected
+#endif
 
 #ifdef DIM_WITH_ENABLE_PIN_PWM
   // If hardware dimming is used, init ledc, set the pin and channel for PWM and set frequency and resolution
@@ -71,7 +76,9 @@ void TFTs::reinit()
 void TFTs::clear()
 {
   // Start with all displays selected.
+#ifndef HARDWARE_MARVELTUBESMINI_CLOCK
   chip_select.setAll();
+#endif
   enableAllDisplays();
 }
 
@@ -98,19 +105,33 @@ void TFTs::loadClockFacesNames()
 
 void TFTs::showNoWifiStatus()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  mtmexpander.setSecondsOnes();
+  setTextColor(TFT_RED, TFT_BLACK);
+  fillRect(0, TFT_HEIGHT - 14, TFT_WIDTH, 14, TFT_BLACK);
+  setCursor(5, TFT_HEIGHT - 14, 2); // Font 4. 26 pixel high
+#else
   chip_select.setSecondsOnes();
   setTextColor(TFT_RED, TFT_BLACK);
   fillRect(0, TFT_HEIGHT - 27, TFT_WIDTH, 27, TFT_BLACK);
   setCursor(5, TFT_HEIGHT - 27, 4); // Font 4. 26 pixel high
+#endif
   print("NO WiFi!");
 }
 
 void TFTs::showNoMqttStatus()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  mtmexpander.setSecondsTens();
+  setTextColor(TFT_RED, TFT_BLACK);
+  fillRect(0, TFT_HEIGHT - 14, TFT_WIDTH, 14, TFT_BLACK);
+  setCursor(5, TFT_HEIGHT - 14, 2);
+#else
   chip_select.setSecondsTens();
   setTextColor(TFT_RED, TFT_BLACK);
   fillRect(0, TFT_HEIGHT - 27, TFT_WIDTH, 27, TFT_BLACK);
   setCursor(5, TFT_HEIGHT - 27, 4);
+#endif
   print("NO MQTT!");
 }
 
@@ -119,7 +140,11 @@ void TFTs::enableAllDisplays()
   // Turn "power" on to displays.
   TFTsEnabled = true;
 #ifndef DIM_WITH_ENABLE_PIN_PWM
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  mtmexpander.setAll();
+#else
   digitalWrite(TFT_ENABLE_PIN, ACTIVATEDISPLAYS);
+#endif
 #else
   // if hardware dimming is used, only activate with the current dimming value
   ProcessUpdatedDimming();
@@ -131,7 +156,11 @@ void TFTs::disableAllDisplays()
   // Turn "power" off to displays.
   TFTsEnabled = false;
 #ifndef DIM_WITH_ENABLE_PIN_PWM
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  mtmexpander.clear();
+#else
   digitalWrite(TFT_ENABLE_PIN, DEACTIVATEDISPLAYS);
+#endif
 #else
   // if hardware dimming is used, deactivate via the dimming value
   ProcessUpdatedDimming();
@@ -186,7 +215,11 @@ void TFTs::showDigit(uint8_t digit)
 {
   if (TFTsEnabled)
   { // only do this, if the displays are enabled
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+    mtmexpander.setDigit(digit);
+#else
     chip_select.setDigit(digit);
+#endif
 
     if (digits[digit] == blanked)
     { // Blank Zero
@@ -227,7 +260,17 @@ void TFTs::InvalidateImageInBuffer()
 
 void TFTs::ProcessUpdatedDimming()
 {
-#ifdef DIM_WITH_ENABLE_PIN_PWM
+#if defined(HARDWARE_MARVELTUBESMINI_CLOCK)
+  if (TFTsEnabled)
+  {
+    mtmexpander.setDim(CALCDIMVALUE(dimming));
+  }
+  else
+  {
+    // no dimming means 255 (full brightness)
+    mtmexpander.setDim(CALCDIMVALUE(0));
+  }
+#elif defined(DIM_WITH_ENABLE_PIN_PWM)
   // hardware dimming is done via PWM on the pin defined by TFT_ENABLE_PIN
   // ONLY for IPSTUBE clocks in the moment! Other clocks may be damaged!
   if (TFTsEnabled)

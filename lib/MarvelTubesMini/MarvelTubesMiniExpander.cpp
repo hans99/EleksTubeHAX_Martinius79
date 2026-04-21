@@ -95,7 +95,7 @@ void MarvelTubesMiniExpander::setDigit(uint8_t digit, bool update_)
 
 void MarvelTubesMiniExpander::setDim(uint32_t duty)
 {
-    i2cWriteReg(EXPANDER_ADDR, EXPANDER_CMD_DIM, 255 - duty);
+    i2cWriteReg(EXPANDER_ADDR, EXPANDER_CMD_DIM, duty);
 }
 
 bool MarvelTubesMiniExpander::expanderWriteCmd(uint8_t address, uint8_t cmd, uint8_t arg)
@@ -167,10 +167,6 @@ void MarvelTubesMiniExpander::i2cScan()
             if (i2cReadReg(address, 0x03, value))
             {
                 Serial.printf("  Reg 0x03 (Config): 0x%02X\n", value);
-            }
-            if (i2cReadReg(address, 0x04, value))
-            {
-                Serial.printf("  Reg 0x04 (Test): 0x%02X\n", value);
             }
             if (i2cReadDirect(address, value))
             {

@@ -16,7 +16,7 @@ void TFTs::begin()
   // If hardware dimming is used, init ledc, set the pin and channel for PWM and set frequency and resolution
   ledcSetup(TFT_PWM_CHANNEL, TFT_PWM_FREQ, TFT_PWM_RESOLUTION);           // PWM, globally defined
   ledcWrite(TFT_PWM_CHANNEL, CALCDIMVALUE(0));                         // Set initial dimming value to 0 (off)
-#else
+#elifdef TFT_ENABLE_PIN
   pinMode(TFT_ENABLE_PIN, OUTPUT); // Set pin for turning display power on and off.
 #endif
   InvalidateImageInBuffer(); // Signal, that the image in the buffer is invalid and needs to be reloaded and refilled
@@ -139,12 +139,10 @@ void TFTs::enableAllDisplays()
 {
   // Turn "power" on to displays.
   TFTsEnabled = true;
-#ifndef DIM_WITH_ENABLE_PIN_PWM
 #ifdef HARDWARE_MARVELTUBESMINI_CLOCK
   mtmexpander.setAll();
-#else
+#elif !defined(DIM_WITH_ENABLE_PIN_PWM)
   digitalWrite(TFT_ENABLE_PIN, ACTIVATEDISPLAYS);
-#endif
 #else
   // if hardware dimming is used, only activate with the current dimming value
   ProcessUpdatedDimming();
@@ -155,12 +153,10 @@ void TFTs::disableAllDisplays()
 {
   // Turn "power" off to displays.
   TFTsEnabled = false;
-#ifndef DIM_WITH_ENABLE_PIN_PWM
 #ifdef HARDWARE_MARVELTUBESMINI_CLOCK
   mtmexpander.clear();
-#else
+#elif !defined(DIM_WITH_ENABLE_PIN_PWM)
   digitalWrite(TFT_ENABLE_PIN, DEACTIVATEDISPLAYS);
-#endif
 #else
   // if hardware dimming is used, deactivate via the dimming value
   ProcessUpdatedDimming();

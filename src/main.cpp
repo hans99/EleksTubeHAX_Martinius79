@@ -307,6 +307,10 @@ static void i2cScan()
 //-----------------------------------------------------------------------
 void setup()
 {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+  Serial.begin(115200);
+  delay(2000); // Wait for serial monitor to catch up
+#endif
 #ifdef HARDWARE_MARVELTUBESMINI_CLOCK2
   Serial.begin(115200);
   delay(2000); // Wait for serial monitor to catch up
@@ -600,7 +604,11 @@ void loop()
     }
     else
     {
+#ifdef HARDWARE_MARVELTUBESMINI_CLOCK
+      tfts.mtmexpander.setAll();
+#else
       tfts.chip_select.setAll();
+#endif
       tfts.fillScreen(TFT_BLACK); // Blank the screens before turning off; needed for all clocks without a real power switch circuit to "simulate" the switched-off displays
       tfts.disableAllDisplays();
     }
@@ -818,7 +826,7 @@ void loop()
 #endif // ONE_BUTTON_ONLY_MENU
 
   menu.loop(buttons); // Must be called after buttons.loop()
-  backlights.loop();
+  //backlights.loop();
   uclock.loop();
 
 #ifdef DIMMING
@@ -1153,7 +1161,7 @@ void checkDimmingNeeded()
       Serial.println("Set to day time mode (max brightness)!");
       tfts.dimming = 255; // 0..255
       tfts.ProcessUpdatedDimming();
-      backlights.setDimming(false);
+      //backlights.setDimming(false);
     }
     updateClockDisplay(TFTs::force); // Redraw everything; software dimming will be done here
     hour_old = current_hour;

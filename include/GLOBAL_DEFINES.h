@@ -30,7 +30,7 @@
 // #define HARDWARE_PUNKCYBER_CLOCK         // PunkCyber / RGB Glow tube / PCBway clocks
 // #define HARDWARE_IPSTUBE_CLOCK           // Clocks with 8MB flash on PCB (like the IPSTube model H401 and H402)
 // #define HARDWARE_MARVELTUBES_CLOCK       // MarvelTubes clock with 16MB flash on PCB
-#define HARDWARE_MARVELTUBESMINI_CLOCK   // MarvelTubes Mini clock with 4MB flash on PCB and ESP C3 Mini
+// #define HARDWARE_MARVELTUBESMINI_CLOCK   // MarvelTubes Mini clock with 4MB flash on PCB and ESP C3 Mini
 
 #ifdef HARDWARE_PUNKCYBER_CLOCK
 // Everything else is the same, except digits are swapped from left to right.
@@ -680,9 +680,9 @@
 
 // Buttons, active low, externally pulled up (with actual resistors!).
 #define BUTTON_LEFT_PIN (9)  // Style/Left button
-#define BUTTON_MODE_PIN (1)  // Menu/Mode button
-#define BUTTON_RIGHT_PIN (2) // Time/Right button
-#define BUTTON_POWER_PIN (0) // Alarm/Power button
+#define BUTTON_MODE_PIN (0)  // Menu/Mode button
+#define BUTTON_RIGHT_PIN (1) // Time/Right button
+#define BUTTON_POWER_PIN (2) // Alarm/Power button
 
 // Chip Select shift register, to select the display
 #define CSSR_DATA_PIN (-1)
